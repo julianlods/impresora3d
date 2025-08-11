@@ -1,0 +1,12 @@
+[
+  {
+    "slug": "ender-3-v3",
+    "nombre": "Creality Ender 3 V3",
+    "tecnologia": "FDM",
+    "volumen": "220 x 220 x 250 mm",
+    "materiales": "PLA, PETG, TPU",
+    "precio_aprox": "USD 230",
+    "imagen": "https://upload.wikimedia.org/wikipedia/commons/3/3a/3D_Printer_example.jpg",
+    "descripcion": "Impresora económica y popular, ideal para empezar."
+  }
+]

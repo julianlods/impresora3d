@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8" />
+	<title>{% block title %}El Sultán del Plástico{% endblock %}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 flex flex-col min-h-screen">
+
+	<!-- HEADER -->
+	<header style="background-color: #f4ebdc;" class="shadow">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
+
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('home') }}" class="flex items-center gap-3" aria-label="Ir al inicio">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="El Sultán del Plástico — logo" class="h-12 w-auto">
+                    <span class="text-2xl font-bold text-gray-800">El Sultán del Plástico</span>
+                </a>
+            </div>
+
+            <!-- Menú -->
+            <nav class="text-lg font-medium">
+            <ul class="flex items-center gap-8">
+                <!-- Único ítem con mega-menú -->
+                <li class="relative group">
+                <button class="text-gray-800 hover:text-yellow-600 inline-flex items-center">
+                    Catálogo de productos
+                    <svg class="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+                    </svg>
+                </button>
+
+                <!-- Wrapper con pt-2 = puente de hover (no desaparece al mover el mouse) -->
+                <div class="absolute left-0 top-full pt-2 z-50">
+                    <!-- Panel: vertical, sin causar scroll de la página -->
+                    <div class="hidden group-hover:block group-focus-within:block
+                                bg-white text-gray-900 rounded-lg shadow-lg border border-gray-200
+                                w-[min(90vw,520px)] max-h-[70vh] overflow-y-auto">
+
+                    <ul class="p-4 space-y-4">
+                        {% for c in nav_categories %}
+                        <li>
+                            <!-- Categoría -->
+                            <a href="{{ url_for('categoria', slug=c.slug) }}"
+                            class="font-semibold text-gray-800 hover:text-yellow-600">
+                            {{ c.name }}
+                            </a>
+
+                            {% set prods = c.products|sort(attribute='name') %}
+                            {% if prods %}
+                            <!-- Productos de la categoría (vertical) -->
+                            <ul class="mt-2 ml-4 list-disc marker:text-gray-400 space-y-1 text-sm">
+                                {% for p in prods %}
+                                <li>
+                                    <a href="{{ url_for('categoria', slug=c.slug) }}" class="hover:text-gray-700">
+                                    {{ p.name }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="mt-2 text-sm text-gray-500">Sin productos</p>
+                            {% endif %}
+                        </li>
+                        {% else %}
+                        <li class="text-gray-500">Sin categorías cargadas.</li>
+                        {% endfor %}
+                    </ul>
+                    </div>
+                </div>
+                </li>
+
+                <li>
+                <a href="{{ url_for('quienes_somos') }}" class="text-gray-800 hover:text-yellow-600">Quiénes somos</a>
+                </li>
+                <li>
+                <a href="{{ url_for('contacto') }}" class="text-gray-800 hover:text-yellow-600">Contacto</a>
+                </li>
+            </ul>
+            </nav>
+		</div>
+	</header>
+
+	<!-- CONTENIDO -->
+	<main class="flex-grow max-w-7xl mx-auto px-4 py-8">
+		{% block content %}{% endblock %}
+	</main>
+
+	<!-- FOOTER -->
+	<footer style="background-color: #f4ebdc;" class="border-t border-gray-300">
+		<div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-800 text-sm">
+			© {{ current_year }} El Sultán del Plástico — Todos los derechos reservados.
+		</div>
+	</footer>
+
+</body>
+</html>

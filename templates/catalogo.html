@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Catálogo de productos — El Sultán del Plástico{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">Catálogo de productos</h2>
+
+{% if categorias %}
+  <div class="space-y-10">
+    {% for cat in categorias %}
+      <section>
+        <div class="flex items-baseline justify-between mb-3">
+          <h3 class="text-xl font-semibold text-yellow-600">{{ cat.name }}</h3>
+        </div>
+
+        {% set prods = cat.products|sort(attribute='name') %}
+        {% if prods %}
+          <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {% for p in prods %}
+              <li class="bg-gray-800 rounded-xl overflow-hidden shadow">
+                {% if p.image_url %}
+                  <img src="{{ p.image_url }}" alt="{{ p.name }}" class="w-full h-40 object-cover">
+                {% endif %}
+                <div class="p-4">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-semibold">{{ p.name }}</h4>
+                    {% if p.price %}<span class="text-yellow-400 text-sm font-semibold">{{ p.price }}</span>{% endif %}
+                  </div>
+                  {% if p.description %}
+                    <p class="text-gray-300 text-sm mt-2 line-clamp-2">{{ p.description }}</p>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-gray-400">Sin productos en esta categoría.</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-gray-300">No hay categorías cargadas.</p>
+{% endif %}
+{% endblock %}
