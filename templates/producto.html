@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ p.name }} — El Sultán del Plástico{% endblock %}
+
+{% block content %}
+<nav class="text-sm text-gray-400 mb-4">
+	<a href="{{ url_for('catalogo') }}" class="hover:text-yellow-500">Catálogo</a>
+	{% if p.category %} / <a href="{{ url_for('categoria', slug=p.category.slug) }}" class="hover:text-yellow-500">{{ p.category.name }}</a>{% endif %}
+	/ <span class="text-gray-300">{{ p.name }}</span>
+</nav>
+
+<div class="grid gap-8 lg:grid-cols-2">
+	<!-- Imagen -->
+	<div class="bg-gray-800 rounded-xl p-4">
+		{% set src = p.image_url %}
+		<div class="w-full bg-black rounded-lg" style="aspect-ratio: 4 / 3;">
+			<img
+				src="{{ src if src and src.startswith('http') else url_for('static', filename=(src or 'images/placeholder.png')) }}"
+				alt="{{ p.name }}"
+				class="w-full h-full object-contain rounded"
+			>
+		</div>
+	</div>
+
+	<!-- Datos -->
+	<div>
+		<h1 class="text-3xl font-bold text-yellow-400">{{ p.name }}</h1>
+
+		<div class="mt-2 flex items-center gap-3">
+			{% if p.category %}
+				<a href="{{ url_for('categoria', slug=p.category.slug) }}"
+				   class="text-xs bg-gray-800 border border-gray-700 px-2 py-1 rounded-full hover:border-yellow-500">
+					{{ p.category.name }}
+				</a>
+			{% endif %}
+			{% if p.slug %}
+				<span class="text-xs text-gray-500">SKU: {{ p.slug }}</span>
+			{% endif %}
+		</div>
+
+		{% if p.price %}
+			<p class="mt-4 text-2xl font-semibold text-yellow-400">{{ p.price }}</p>
+		{% endif %}
+
+		{% if p.description %}
+			<div class="mt-6 prose prose-invert max-w-none">
+				<p>{{ p.description }}</p>
+			</div>
+		{% endif %}
+
+		<div class="mt-8 flex gap-3">
+			<a href="{{ url_for('catalogo') }}"
+			   class="bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100">
+				Volver al catálogo
+			</a>
+			{% if p.category %}
+			<a href="{{ url_for('categoria', slug=p.category.slug) }}"
+			   class="bg-gray-800 border border-gray-700 px-4 py-2 rounded-lg font-semibold hover:border-yellow-500">
+				Ver más en {{ p.category.name }}
+			</a>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %}

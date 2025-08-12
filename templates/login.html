@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Login — El Sultán del Plástico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-900 text-gray-100">
+  <div class="w-full max-w-sm bg-gray-800 p-6 rounded-xl shadow">
+    <h1 class="text-xl font-bold mb-4 text-yellow-400">Ingresar al Admin</h1>
+
+    {% if error %}
+      <div class="mb-4 bg-red-600 text-white text-sm px-3 py-2 rounded">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="space-y-4">
+      <div>
+        <label class="block text-sm mb-1">Usuario</label>
+        <input name="username" type="text" class="w-full rounded bg-gray-900 border border-gray-700 px-3 py-2 focus:outline-none" required>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Contraseña</label>
+        <input name="password" type="password" class="w-full rounded bg-gray-900 border border-gray-700 px-3 py-2 focus:outline-none" required>
+      </div>
+      <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold px-4 py-2 rounded">
+        Entrar
+      </button>
+    </form>
+
+    <p class="mt-4 text-xs text-gray-400">
+      Tip: cambiá <code>ADMIN_USER</code> y <code>ADMIN_PASSWORD</code> en <code>app.py</code>.
+    </p>
+  </div>
+</body>
+</html>

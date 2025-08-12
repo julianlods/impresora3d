@@ -1,4 +1,6 @@
-from flask import Flask, render_template, abort
+from flask import Flask, render_template, abort, redirect, url_for, request, session
+from flask_admin import Admin, AdminIndexView
+from flask_admin.contrib.sqla import ModelView
 from datetime import datetime
 from pathlib import Path
 import json
@@ -6,6 +8,8 @@ import json
 # ---- Flask básico
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me"
+app.config["ADMIN_USER"] = "j"        # CAMBIALO
+app.config["ADMIN_PASSWORD"] = "j" # CAMBIALO
 
 # ---- Base de datos (SQLite)
 from flask_sqlalchemy import SQLAlchemy
@@ -40,13 +44,35 @@ class Product(db.Model):
         return f"<Product {self.name}>"
 
 # ---- Admin
-from flask_admin import Admin
+class _AuthMixin:
+    def is_accessible(self):
+        return session.get("admin", False)
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for("login", next=request.url))
+
+# Tus vistas de admin ahora heredan del mixin para exigir login
+# --- Admin (solo reemplazá las clases y, si querés, form_widget_args)
 from flask_admin.contrib.sqla import ModelView
 
-class CategoryAdmin(ModelView):
-    form_columns = ["name", "slug", "description"]
+class CategoryAdmin(_AuthMixin, ModelView):
+    extra_css = ["/static/admin.css"]
+    create_modal = True
+    edit_modal = True
+    details_modal = True
 
-class ProductAdmin(ModelView):
+    form_columns = ["name", "slug", "description"]
+    form_widget_args = {
+        "name": {"class": "form-control form-control-sm"},
+        "slug": {"class": "form-control form-control-sm"},
+        "description": {"rows": 3, "style": "resize:vertical;"},
+    }
+
+class ProductAdmin(_AuthMixin, ModelView):
+    extra_css = ["/static/admin.css"]
+    create_modal = True
+    edit_modal = True
+    details_modal = True
+
     form_columns = ["name", "slug", "description", "price", "image_url", "category"]
     column_list = ["name", "category", "price", "slug"]
     column_labels = {
@@ -59,9 +85,32 @@ class ProductAdmin(ModelView):
     column_sortable_list = ["name", ("category", "category.name"), "price", "slug"]
     column_searchable_list = ["name", "slug", "description", "category.name"]
 
-admin = Admin(app, name="El Sultán - Admin", template_mode="bootstrap4")
+    form_widget_args = {
+        "name": {"class": "form-control form-control-sm"},
+        "slug": {"class": "form-control form-control-sm"},
+        "price": {"class": "form-control form-control-sm"},
+        "image_url": {"class": "form-control form-control-sm"},
+        "description": {"rows": 3, "style": "resize:vertical;"},
+    }
+
+    # Si tenés muchas categorías, búsqueda por AJAX (opcional)
+    form_ajax_refs = {
+        "category": {"fields": ("name", "slug")}
+    }
+
+class SecureIndexView(_AuthMixin, AdminIndexView):
+    extra_css = ["/static/admin.css"]
+    pass
+
+admin = Admin(
+    app,
+    name="El Sultán - Admin",
+    index_view=SecureIndexView(url="/admin"),
+    template_mode="bootstrap4",
+)
 admin.add_view(CategoryAdmin(Category, db.session))
 admin.add_view(ProductAdmin(Product, db.session))
+
 
 # ---- Utilidades (para tu footer y el menú)
 @app.context_processor
@@ -116,6 +165,28 @@ def categoria(slug):
     cat = Category.query.filter_by(slug=slug).first_or_404()
     productos = Product.query.filter_by(category_id=cat.id).order_by(Product.name).all()
     return render_template("categoria.html", categoria=cat, productos=productos)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        u = request.form.get("username", "").strip()
+        p = request.form.get("password", "")
+        if u == app.config["ADMIN_USER"] and p == app.config["ADMIN_PASSWORD"]:
+            session["admin"] = True
+            return redirect(request.args.get("next") or url_for("admin.index"))
+        error = "Usuario o contraseña inválidos."
+    return render_template("login.html", error=error)
+
+@app.route("/logout")
+def logout():
+    session.pop("admin", None)
+    return redirect(url_for("login"))
+
+@app.route("/producto/<slug>")
+def producto(slug):
+    p = Product.query.filter_by(slug=slug).first_or_404()
+    return render_template("producto.html", p=p)
 
 # ---- Inicializar DB (ejecutar 1 sola vez)
 @app.route("/initdb")

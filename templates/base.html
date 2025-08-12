@@ -8,10 +8,10 @@
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col min-h-screen">
 
-	<!-- HEADER -->
-	<header style="background-color: #f4ebdc;" class="shadow">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
-
+    <!-- HEADER -->
+    <header style="background-color: #f4ebdc;" class="shadow">
+        <div class="mx-auto w-[min(92vw,1100px)] px-4 sm:px-6 lg:px-8
+                    flex items-center justify-center gap-10 h-20">
             <!-- Logo -->
             <div class="flex items-center gap-3">
                 <a href="{{ url_for('home') }}" class="flex items-center gap-3" aria-label="Ir al inicio">
@@ -22,66 +22,78 @@
 
             <!-- Menú -->
             <nav class="text-lg font-medium">
-            <ul class="flex items-center gap-8">
-                <!-- Único ítem con mega-menú -->
-                <li class="relative group">
-                <button class="text-gray-800 hover:text-yellow-600 inline-flex items-center">
-                    Catálogo de productos
-                    <svg class="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
-                    </svg>
-                </button>
+                <ul class="flex items-center gap-8">
+                    <!-- Único ítem con mega-menú -->
+                    <li class="relative group">
+                        <button class="text-gray-800 hover:text-yellow-600 inline-flex items-center">
+                            Catálogo de productos
+                            <svg class="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+                            </svg>
+                        </button>
 
-                <!-- Wrapper con pt-2 = puente de hover (no desaparece al mover el mouse) -->
-                <div class="absolute left-0 top-full pt-2 z-50">
-                    <!-- Panel: vertical, sin causar scroll de la página -->
-                    <div class="hidden group-hover:block group-focus-within:block
-                                bg-white text-gray-900 rounded-lg shadow-lg border border-gray-200
-                                w-[min(90vw,520px)] max-h-[70vh] overflow-y-auto">
-
-                    <ul class="p-4 space-y-4">
-                        {% for c in nav_categories %}
-                        <li>
-                            <!-- Categoría -->
-                            <a href="{{ url_for('categoria', slug=c.slug) }}"
-                            class="font-semibold text-gray-800 hover:text-yellow-600">
-                            {{ c.name }}
-                            </a>
-
-                            {% set prods = c.products|sort(attribute='name') %}
-                            {% if prods %}
-                            <!-- Productos de la categoría (vertical) -->
-                            <ul class="mt-2 ml-4 list-disc marker:text-gray-400 space-y-1 text-sm">
-                                {% for p in prods %}
-                                <li>
-                                    <a href="{{ url_for('categoria', slug=c.slug) }}" class="hover:text-gray-700">
-                                    {{ p.name }}
-                                    </a>
-                                </li>
+                        <!-- Wrapper con pt-2 = puente de hover -->
+                        <div class="absolute left-0 top-full pt-2 z-50">
+                        <!-- Panel con fondo sólido -->
+                        <div
+                            class="hidden group-hover:block group-focus-within:block
+                                rounded-lg shadow-xl border w-[min(92vw,520px)] max-h-[70vh] overflow-hidden
+                                text-gray-800 ring-1"
+                            style="background-color:#f4ebdc; border-color:#e6dac8; --tw-ring-color:#e6dac8;"
+                        >
+                            <div class="p-2">
+                            <div class="grid md:grid-cols-[240px_1fr]">
+                                <!-- Columna: Categorías (fondo sólido) -->
+                                <ul id="menu-cats"
+                                    class="bg-[#f4ebdc] md:border-r md:border-[#e6dac8] md:max-h-[70vh] md:overflow-y-auto p-2 space-y-1">
+                                {% for c in nav_categories %}
+                                    <li>
+                                    <button type="button"
+                                            class="cat-btn w-full text-left px-3 py-2 rounded font-semibold text-gray-800 hover:bg-[#efe5d1]"
+                                            data-target="pnl-{{ c.id }}"
+                                            title="Ver productos de {{ c.name }}">
+                                        {{ c.name }}
+                                    </button>
+                                    </li>
+                                {% else %}
+                                    <li class="text-gray-500 px-3 py-2">Sin categorías cargadas.</li>
                                 {% endfor %}
-                            </ul>
-                            {% else %}
-                            <p class="mt-2 text-sm text-gray-500">Sin productos</p>
-                            {% endif %}
-                        </li>
-                        {% else %}
-                        <li class="text-gray-500">Sin categorías cargadas.</li>
-                        {% endfor %}
-                    </ul>
-                    </div>
-                </div>
-                </li>
+                                </ul>
 
-                <li>
-                <a href="{{ url_for('quienes_somos') }}" class="text-gray-800 hover:text-yellow-600">Quiénes somos</a>
-                </li>
-                <li>
-                <a href="{{ url_for('contacto') }}" class="text-gray-800 hover:text-yellow-600">Contacto</a>
-                </li>
-            </ul>
+                                <!-- Columna: Productos (fondo sólido) -->
+                                <div class="bg-[#f4ebdc] md:max-h-[70vh] md:overflow-y-auto p-2">
+                                {% for c in nav_categories %}
+                                    {% set prods = c.products|sort(attribute='name') %}
+                                    <ul id="pnl-{{ c.id }}" class="prod-panel {% if not loop.first %}hidden{% endif %} space-y-1">
+                                    {% if prods %}
+                                        {% for p in prods %}
+                                        <li>
+                                            <a href="{{ url_for('producto', slug=p.slug) }}"
+                                            class="block px-3 py-1 rounded hover:bg-[#efe5d1] whitespace-nowrap overflow-hidden text-ellipsis">
+                                            {{ p.name }}
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li class="px-3 py-2 text-sm text-gray-600">Sin productos</li>
+                                    {% endif %}
+                                    </ul>
+                                {% endfor %}
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('quienes_somos') }}" class="text-gray-800 hover:text-yellow-600">Quiénes somos</a>
+                    </li>
+                    <!-- (Contacto eliminado) -->
+                </ul>
             </nav>
-		</div>
-	</header>
+        </div>
+    </header>
 
 	<!-- CONTENIDO -->
 	<main class="flex-grow max-w-7xl mx-auto px-4 py-8">
@@ -94,6 +106,26 @@
 			© {{ current_year }} El Sultán del Plástico — Todos los derechos reservados.
 		</div>
 	</footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const btns = document.querySelectorAll('.cat-btn');
+    const panels = document.querySelectorAll('.prod-panel');
+
+    const show = (id) => {
+        panels.forEach(p => p.classList.toggle('hidden', p.id !== id));
+    };
+
+    btns.forEach((b, i) => {
+        const id = b.dataset.target;
+        // Desktop: hover/focus
+        b.addEventListener('mouseenter', () => show(id));
+        b.addEventListener('focus', () => show(id));
+        // Móvil: tap
+        b.addEventListener('click', (e) => { e.preventDefault(); show(id); });
+    });
+    });
+    </script>
 
 </body>
 </html>
