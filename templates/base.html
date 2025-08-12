@@ -47,19 +47,35 @@
                                 <ul id="menu-cats"
                                     class="bg-[#f4ebdc] md:border-r md:border-[#e6dac8] md:max-h-[70vh] md:overflow-y-auto p-2 space-y-1">
                                 {% for c in nav_categories %}
-                                    <li>
-                                    <button type="button"
-                                            class="cat-btn w-full text-left px-3 py-2 rounded font-semibold text-gray-800 hover:bg-[#efe5d1]"
-                                            data-target="pnl-{{ c.id }}"
-                                            title="Ver productos de {{ c.name }}">
+                                {% set prods = c.products|sort(attribute='name') %}
+                                <li>
+                                    <div class="flex items-center justify-between">
+                                    <!-- CLICK: navega a la categoría -->
+                                    <a href="{{ url_for('categoria', slug=c.slug) }}"
+                                        class="cat-link block px-3 py-2 rounded font-semibold text-gray-800 hover:bg-[#efe5d1]"
+                                        data-target="pnl-{{ c.id }}">
                                         {{ c.name }}
-                                    </button>
-                                    </li>
-                                {% else %}
-                                    <li class="text-gray-500 px-3 py-2">Sin categorías cargadas.</li>
-                                {% endfor %}
-                                </ul>
+                                    </a>
 
+                                    <!-- FLECHA: solo expande/colapsa productos -->
+                                    {% if prods %}
+                                        <button type="button"
+                                                class="toggle-prod mr-1 p-1 rounded hover:bg-[#efe5d1] transition"
+                                                aria-expanded="false"
+                                                aria-controls="pnl-{{ c.id }}"
+                                                title="Ver productos de {{ c.name }}">
+                                        <svg class="w-4 h-4 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+                                        </svg>
+                                        </button>
+                                    {% endif %}
+                                    </div>
+                                </li>
+                                {% else %}
+                                <li class="text-gray-500 px-3 py-2">Sin categorías cargadas.</li>
+                                {% endfor %}
+                            </ul>
+                            
                                 <!-- Columna: Productos (fondo sólido) -->
                                 <div class="bg-[#f4ebdc] md:max-h-[70vh] md:overflow-y-auto p-2">
                                 {% for c in nav_categories %}
@@ -109,20 +125,39 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-    const btns = document.querySelectorAll('.cat-btn');
-    const panels = document.querySelectorAll('.prod-panel');
+    // mostrar panel de productos al pasar por la categoría (desktop) o enfocar
+    const catLinks = document.querySelectorAll('.cat-link');
+    const panels   = document.querySelectorAll('.prod-panel');
+    const toggles  = document.querySelectorAll('.toggle-prod');
 
     const show = (id) => {
         panels.forEach(p => p.classList.toggle('hidden', p.id !== id));
     };
 
-    btns.forEach((b, i) => {
-        const id = b.dataset.target;
-        // Desktop: hover/focus
-        b.addEventListener('mouseenter', () => show(id));
-        b.addEventListener('focus', () => show(id));
-        // Móvil: tap
-        b.addEventListener('click', (e) => { e.preventDefault(); show(id); });
+    // Desktop: hover/focus en el NOMBRE de la categoría revela sus productos
+    catLinks.forEach(link => {
+        const id = link.dataset.target;
+        link.addEventListener('mouseenter', () => show(id));
+        link.addEventListener('focus', () => show(id));
+        // en móvil el click del link navega normal (no lo bloqueamos)
+    });
+
+    // Flecha: solo expande/colapsa en móvil (o permite “pin” en desktop)
+    toggles.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.getAttribute('aria-controls');
+        const panel = document.getElementById(id);
+        if (!panel) return;
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!expanded));
+
+        // rotar flecha y alternar panel
+        const svg = btn.querySelector('svg');
+        if (svg) svg.classList.toggle('rotate-180', !expanded);
+        panel.classList.toggle('hidden', expanded);
+        });
     });
     });
     </script>
