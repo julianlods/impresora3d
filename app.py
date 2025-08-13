@@ -160,12 +160,6 @@ def catalogo():
     categorias = Category.query.order_by(Category.name).all()
     return render_template("catalogo.html", categorias=categorias)
 
-@app.route("/categoria/<slug>")
-def categoria(slug):
-    cat = Category.query.filter_by(slug=slug).first_or_404()
-    productos = Product.query.filter_by(category_id=cat.id).order_by(Product.name).all()
-    return render_template("categoria.html", categoria=cat, productos=productos)
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -187,6 +181,12 @@ def logout():
 def producto(slug):
     p = Product.query.filter_by(slug=slug).first_or_404()
     return render_template("producto.html", p=p)
+
+@app.route("/categoria/<slug>")
+def categoria(slug):
+    cat = Category.query.filter_by(slug=slug).first_or_404()
+    productos = Product.query.filter_by(category_id=cat.id).order_by(Product.name).all()
+    return render_template("categoria.html", categoria=cat, productos=productos)
 
 # ---- Inicializar DB (ejecutar 1 sola vez)
 @app.route("/initdb")

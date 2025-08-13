@@ -1,150 +1,148 @@
 <!doctype html>
 <html lang="es">
 <head>
-	<meta charset="utf-8" />
-	<title>{% block title %}El Sultán del Plástico{% endblock %}</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <title>{% block title %}El Sultán del Plástico{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* 1) Mantener estable el ancho aunque aparezca el scrollbar */
+    html { scrollbar-gutter: stable both-edges; }
+    /* (fallback viejo) fuerza canal de scroll aunque no haga falta */
+    body { overflow-y: auto; }
+
+    /* 2) Evitar vw en el contenedor: usar % + max-width */
+    .layout-container { max-width: 1100px; width: 92%; margin-left: auto; margin-right: auto; }
+  </style>
 </head>
-<body class="bg-gray-900 text-gray-100 flex flex-col min-h-screen">
+<body class="bg-gray-900 text-gray-100 flex flex-col min-h-screen pt-20">
 
-    <!-- HEADER -->
-    <header style="background-color: #f4ebdc;" class="shadow">
-        <div class="mx-auto w-[min(92vw,1100px)] px-4 sm:px-6 lg:px-8
-                    flex items-center justify-center gap-10 h-20">
-            <!-- Logo -->
-            <div class="flex items-center gap-3">
-                <a href="{{ url_for('home') }}" class="flex items-center gap-3" aria-label="Ir al inicio">
-                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="El Sultán del Plástico — logo" class="h-12 w-auto">
-                    <span class="text-2xl font-bold text-gray-800">El Sultán del Plástico</span>
-                </a>
+  <!-- HEADER FIJO -->
+  <header style="background-color: #f4ebdc;" class="shadow fixed top-0 left-0 right-0 z-50">
+    <div class="layout-container px-4 sm:px-6 lg:px-8
+                flex items-center justify-center gap-10 h-20">
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('home') }}" class="flex items-center gap-3" aria-label="Ir al inicio">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="El Sultán del Plástico — logo" class="h-12 w-auto">
+          <span class="text-2xl font-bold text-gray-800">El Sultán del Plástico</span>
+        </a>
+      </div>
+
+      <!-- Menú -->
+      <nav class="text-lg font-medium">
+        <ul class="flex items-center gap-8">
+          <li class="relative group">
+            <button class="text-gray-800 hover:text-yellow-600 inline-flex items-center select-none" type="button">
+              Catálogo de productos
+              <svg class="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+              </svg>
+            </button>
+
+            <div class="absolute left-0 top-full pt-2 z-50">
+              <div
+                class="hidden group-hover:block
+                       rounded-lg shadow-xl border w-[min(92vw,520px)] max-h-[70vh] overflow-hidden
+                       text-gray-800 ring-1"
+                style="background-color:#f4ebdc; border-color:#e6dac8; --tw-ring-color:#e6dac8;"
+              >
+                <div class="p-2">
+                  <div class="grid md:grid-cols-[240px_1fr]">
+                    <ul id="menu-cats"
+                        class="bg-[#f4ebdc] md:border-r md:border-[#e6dac8] md:max-h-[70vh] md:overflow-y-auto p-2 space-y-1">
+                      {% for c in nav_categories %}
+                        {% set prods = c.products|sort(attribute='name') %}
+                        <li>
+                          <div class="flex items-center justify-between">
+                            <a href="{{ url_for('categoria', slug=c.slug) }}"
+                               class="cat-link block px-3 py-2 rounded font-semibold text-gray-800 hover:bg-[#efe5d1]"
+                               data-target="pnl-{{ c.id }}">
+                              {{ c.name }}
+                            </a>
+                            {% if prods %}
+                              <button type="button"
+                                      class="toggle-prod mr-1 p-1 rounded hover:bg-[#efe5d1] transition"
+                                      aria-expanded="false"
+                                      aria-controls="pnl-{{ c.id }}"
+                                      title="Ver productos de {{ c.name }}">
+                                <svg class="w-4 h-4 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                  <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+                                </svg>
+                              </button>
+                            {% endif %}
+                          </div>
+                        </li>
+                      {% else %}
+                        <li class="text-gray-500 px-3 py-2">Sin categorías cargadas.</li>
+                      {% endfor %}
+                    </ul>
+
+                    <div class="bg-[#f4ebdc] md:max-h-[70vh] md:overflow-y-auto p-2">
+                      {% for c in nav_categories %}
+                        {% set prods = c.products|sort(attribute='name') %}
+                        <ul id="pnl-{{ c.id }}" class="prod-panel hidden space-y-1">
+                          {% if prods %}
+                            {% for p in prods %}
+                              <li>
+                                <a href="{{ url_for('producto', slug=p.slug) }}"
+                                   class="block px-3 py-1 rounded hover:bg-[#efe5d1] whitespace-nowrap overflow-hidden text-ellipsis">
+                                  {{ p.name }}
+                                </a>
+                              </li>
+                            {% endfor %}
+                          {% else %}
+                            <li class="px-3 py-2 text-sm text-gray-600">Sin productos</li>
+                          {% endif %}
+                        </ul>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </li>
 
-            <!-- Menú -->
-            <nav class="text-lg font-medium">
-                <ul class="flex items-center gap-8">
-                    <!-- Único ítem con mega-menú -->
-                    <li class="relative group">
-                        <button class="text-gray-800 hover:text-yellow-600 inline-flex items-center">
-                            Catálogo de productos
-                            <svg class="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
-                            </svg>
-                        </button>
+          <li>
+            <a href="{{ url_for('quienes_somos') }}" class="text-gray-800 hover:text-yellow-600">Quiénes somos</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-                        <!-- Wrapper con pt-2 = puente de hover -->
-                        <div class="absolute left-0 top-full pt-2 z-50">
-                        <!-- Panel con fondo sólido -->
-                        <div
-                            class="hidden group-hover:block group-focus-within:block
-                                rounded-lg shadow-xl border w-[min(92vw,520px)] max-h-[70vh] overflow-hidden
-                                text-gray-800 ring-1"
-                            style="background-color:#f4ebdc; border-color:#e6dac8; --tw-ring-color:#e6dac8;"
-                        >
-                            <div class="p-2">
-                            <div class="grid md:grid-cols-[240px_1fr]">
-                                <!-- Columna: Categorías (fondo sólido) -->
-                                <ul id="menu-cats"
-                                    class="bg-[#f4ebdc] md:border-r md:border-[#e6dac8] md:max-h-[70vh] md:overflow-y-auto p-2 space-y-1">
-                                {% for c in nav_categories %}
-                                {% set prods = c.products|sort(attribute='name') %}
-                                <li>
-                                    <div class="flex items-center justify-between">
-                                    <!-- CLICK: navega a la categoría -->
-                                    <a href="{{ url_for('categoria', slug=c.slug) }}"
-                                        class="cat-link block px-3 py-2 rounded font-semibold text-gray-800 hover:bg-[#efe5d1]"
-                                        data-target="pnl-{{ c.id }}">
-                                        {{ c.name }}
-                                    </a>
+  <!-- CONTENIDO -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
 
-                                    <!-- FLECHA: solo expande/colapsa productos -->
-                                    {% if prods %}
-                                        <button type="button"
-                                                class="toggle-prod mr-1 p-1 rounded hover:bg-[#efe5d1] transition"
-                                                aria-expanded="false"
-                                                aria-controls="pnl-{{ c.id }}"
-                                                title="Ver productos de {{ c.name }}">
-                                        <svg class="w-4 h-4 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                            <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
-                                        </svg>
-                                        </button>
-                                    {% endif %}
-                                    </div>
-                                </li>
-                                {% else %}
-                                <li class="text-gray-500 px-3 py-2">Sin categorías cargadas.</li>
-                                {% endfor %}
-                            </ul>
-                            
-                                <!-- Columna: Productos (fondo sólido) -->
-                                <div class="bg-[#f4ebdc] md:max-h-[70vh] md:overflow-y-auto p-2">
-                                {% for c in nav_categories %}
-                                    {% set prods = c.products|sort(attribute='name') %}
-                                    <ul id="pnl-{{ c.id }}" class="prod-panel {% if not loop.first %}hidden{% endif %} space-y-1">
-                                    {% if prods %}
-                                        {% for p in prods %}
-                                        <li>
-                                            <a href="{{ url_for('producto', slug=p.slug) }}"
-                                            class="block px-3 py-1 rounded hover:bg-[#efe5d1] whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {{ p.name }}
-                                            </a>
-                                        </li>
-                                        {% endfor %}
-                                    {% else %}
-                                        <li class="px-3 py-2 text-sm text-gray-600">Sin productos</li>
-                                    {% endif %}
-                                    </ul>
-                                {% endfor %}
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-                    </li>
+  <!-- FOOTER -->
+  <footer style="background-color: #f4ebdc;" class="border-t border-gray-300">
+    <div class="layout-container px-4 py-6 text-center text-gray-800 text-sm">
+      © {{ current_year }} El Sultán del Plástico — Todos los derechos reservados.
+    </div>
+  </footer>
 
-                    <li>
-                        <a href="{{ url_for('quienes_somos') }}" class="text-gray-800 hover:text-yellow-600">Quiénes somos</a>
-                    </li>
-                    <!-- (Contacto eliminado) -->
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-	<!-- CONTENIDO -->
-	<main class="flex-grow max-w-7xl mx-auto px-4 py-8">
-		{% block content %}{% endblock %}
-	</main>
-
-	<!-- FOOTER -->
-	<footer style="background-color: #f4ebdc;" class="border-t border-gray-300">
-		<div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-800 text-sm">
-			© {{ current_year }} El Sultán del Plástico — Todos los derechos reservados.
-		</div>
-	</footer>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-    // mostrar panel de productos al pasar por la categoría (desktop) o enfocar
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
     const catLinks = document.querySelectorAll('.cat-link');
     const panels   = document.querySelectorAll('.prod-panel');
     const toggles  = document.querySelectorAll('.toggle-prod');
 
     const show = (id) => {
-        panels.forEach(p => p.classList.toggle('hidden', p.id !== id));
+      panels.forEach(p => p.classList.toggle('hidden', p.id !== id));
     };
 
-    // Desktop: hover/focus en el NOMBRE de la categoría revela sus productos
+    // Desktop: SOLO HOVER muestra productos
     catLinks.forEach(link => {
-        const id = link.dataset.target;
-        link.addEventListener('mouseenter', () => show(id));
-        link.addEventListener('focus', () => show(id));
-        // en móvil el click del link navega normal (no lo bloqueamos)
+      const id = link.dataset.target;
+      link.addEventListener('mouseenter', () => show(id));
     });
 
-    // Flecha: solo expande/colapsa en móvil (o permite “pin” en desktop)
+    // Flecha: expande/colapsa
     toggles.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         const id = btn.getAttribute('aria-controls');
@@ -152,15 +150,13 @@
         if (!panel) return;
         const expanded = btn.getAttribute('aria-expanded') === 'true';
         btn.setAttribute('aria-expanded', String(!expanded));
-
-        // rotar flecha y alternar panel
         const svg = btn.querySelector('svg');
         if (svg) svg.classList.toggle('rotate-180', !expanded);
         panel.classList.toggle('hidden', expanded);
-        });
+      });
     });
-    });
-    </script>
+  });
+  </script>
 
 </body>
 </html>
