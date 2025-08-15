@@ -194,5 +194,14 @@ def initdb():
     db.create_all()
     return "DB creada OK"
 
+@app.route("/solicitar-articulo", methods=["POST"])
+def solicitar_articulo():
+    nombre = request.form.get("nombre_articulo", "").strip()
+    if nombre:
+        # Acá podrías guardar en la base de datos o enviar un correo
+        print(f"Solicitud recibida: {nombre}")
+        # Ejemplo: flash("Tu solicitud fue enviada. ¡Gracias!", "success")
+    return redirect(url_for("home"))
+
 if __name__ == "__main__":
     app.run(debug=True)

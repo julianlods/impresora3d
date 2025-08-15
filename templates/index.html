@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="text-center my-2">
-	<h1 class="text-3xl md:text-4xl font-bold text-gray-100 mb-2">
+	<h1 class="text-3xl md:text-4xl font-bold text-amber-700 mb-2">
 		Catálogo de Productos
 	</h1>
 </div>
@@ -98,4 +98,29 @@ document.addEventListener('DOMContentLoaded', () => {
 	window.addEventListener('resize', updateArrows);
 });
 </script>
+
+<!-- Sección Solicitar artículo -->
+<div class="mt-10 text-center">
+  <h2 class="text-2xl font-bold text-amber-700 mb-3">
+    ¿No encontrás lo que buscás?
+  </h2>
+  <p class="text-gray-700 mb-4">
+    Contame qué artículo necesitás y el Sultán lo hará para vos.
+  </p>
+  <form action="{{ url_for('solicitar_articulo') }}" method="post" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3">
+    <input
+      type="text"
+      name="nombre_articulo"
+      placeholder="Escribí el nombre del artículo"
+      class="flex-grow px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
+      required
+    >
+    <button
+      type="submit"
+      class="bg-amber-700 hover:bg-amber-800 text-white px-6 py-2 rounded font-semibold">
+      Solicitar
+    </button>
+  </form>
+</div>
+
 {% endblock %}

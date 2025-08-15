@@ -2,50 +2,57 @@
 {% block title %}{{ categoria.name }} — El Sultán del Plástico{% endblock %}
 
 {% block content %}
-<nav class="text-sm text-gray-400 mb-4">
-  <a href="{{ url_for('catalogo') }}" class="hover:text-yellow-500">Catálogo</a>
-  / <span class="text-gray-300">{{ categoria.name }}</span>
-</nav>
+<!-- Contenedor único: centrado en la página, ancho constante -->
+<div class="mx-auto w-[min(92vw,840px)] px-4">
 
-<header class="mb-6">
-  <h1 class="text-3xl font-bold text-yellow-400">{{ categoria.name }}</h1>
-  {% if categoria.description %}
-    <p class="text-gray-300 mt-2">{{ categoria.description }}</p>
-  {% endif %}
-</header>
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-400 mb-4 text-left">
+    <a href="{{ url_for('catalogo') }}" class="hover:text-yellow-500">Catálogo</a>
+    / <span class="text-gray-300">{{ categoria.name }}</span>
+  </nav>
 
-{% if productos %}
-  <!-- Contenedor más angosto y tarjetas compactas, sin deformar imágenes -->
-  <section class="mx-auto max-w-6xl">
-    <ul class="flex flex-wrap justify-center gap-5 md:gap-6">
-      {% for p in productos %}
-        <li class="bg-gray-800 rounded-lg overflow-hidden shadow hover:shadow-lg transition w-[14rem]">
-          {% set src = p.image_url %}
-          <a href="{{ url_for('producto', slug=p.slug) }}" class="block">
-            <div class="w-full bg-black" style="aspect-ratio: 4 / 3;">
-              <img
-                src="{{ src if src and src.startswith('http') else url_for('static', filename=(src or 'images/placeholder.png')) }}"
-                alt="{{ p.name }}"
-                class="w-full h-full object-contain"
-              >
+  <!-- Título y descripción -->
+  <header class="mb-6 text-left">
+    <h1 class="text-3xl font-bold text-amber-700">{{ categoria.name }}</h1>
+    {% if categoria.description %}
+      <p class="text-gray-300 mt-2">{{ categoria.description }}</p>
+    {% endif %}
+  </header>
+
+  {% if productos %}
+    <!-- Grilla: máximo 3 por fila -->
+    <section>
+      <ul class="flex flex-wrap gap-5 md:gap-6 justify-start">
+        {% for p in productos %}
+          <li class="bg-gray-800 rounded-lg overflow-hidden shadow hover:shadow-lg transition w-[14rem]">
+            {% set src = p.image_url %}
+            <a href="{{ url_for('producto', slug=p.slug) }}" class="block">
+              <div class="w-full bg-black" style="aspect-ratio: 4 / 3;">
+                <img
+                  src="{{ src if src and src.startswith('http') else url_for('static', filename=(src or 'images/placeholder.png')) }}"
+                  alt="{{ p.name }}"
+                  class="w-full h-full object-contain"
+                >
+              </div>
+            </a>
+            <div class="p-3">
+              <h3 class="text-sm font-semibold leading-snug">
+                <a href="{{ url_for('producto', slug=p.slug) }}" class="hover:underline">{{ p.name }}</a>
+              </h3>
+              {% if p.price %}
+                <p class="text-yellow-400 font-semibold mt-1 text-xs">{{ p.price }}</p>
+              {% endif %}
+              {% if p.description %}
+                <p class="text-gray-300 text-xs mt-1 line-clamp-2">{{ p.description }}</p>
+              {% endif %}
             </div>
-          </a>
-          <div class="p-3">
-            <h3 class="text-sm font-semibold leading-snug">
-              <a href="{{ url_for('producto', slug=p.slug) }}" class="hover:underline">{{ p.name }}</a>
-            </h3>
-            {% if p.price %}
-              <p class="text-yellow-400 font-semibold mt-1 text-xs">{{ p.price }}</p>
-            {% endif %}
-            {% if p.description %}
-              <p class="text-gray-300 text-xs mt-1 line-clamp-2">{{ p.description }}</p>
-            {% endif %}
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
-  </section>
-{% else %}
-  <p class="text-gray-300">Todavía no hay productos en esta categoría.</p>
-{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% else %}
+    <p class="text-gray-300">Todavía no hay productos en esta categoría.</p>
+  {% endif %}
+
+</div>
 {% endblock %}
