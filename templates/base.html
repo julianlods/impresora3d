@@ -34,12 +34,13 @@
       <nav class="text-lg font-medium">
         <ul class="flex items-center gap-8">
           <li class="relative group">
-            <button class="text-gray-800 hover:text-yellow-600 inline-flex items-center select-none" type="button">
+            <a href="{{ url_for('catalogo') }}"
+              class="text-gray-800 hover:text-yellow-600 inline-flex items-center select-none">
               Catálogo de productos
               <svg class="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
               </svg>
-            </button>
+            </a>
 
             <div class="absolute left-0 top-full pt-2 z-50">
               <div

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, redirect, url_for, request, session
+from flask import Flask, render_template, abort, redirect, url_for, request, session, flash
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from datetime import datetime
@@ -9,7 +9,7 @@ import json
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me"
 app.config["ADMIN_USER"] = "j"        # CAMBIALO
-app.config["ADMIN_PASSWORD"] = "j" # CAMBIALO
+app.config["ADMIN_PASSWORD"] = "j"    # CAMBIALO
 
 # ---- Base de datos (SQLite)
 from flask_sqlalchemy import SQLAlchemy
@@ -43,6 +43,15 @@ class Product(db.Model):
     def __repr__(self):
         return f"<Product {self.name}>"
 
+# === NUEVO: Solicitudes de artículos ===
+class SolicitudArticulo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<SolicitudArticulo {self.nombre}>"
+
 # ---- Admin
 class _AuthMixin:
     def is_accessible(self):
@@ -50,16 +59,12 @@ class _AuthMixin:
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for("login", next=request.url))
 
-# Tus vistas de admin ahora heredan del mixin para exigir login
-# --- Admin (solo reemplazá las clases y, si querés, form_widget_args)
-from flask_admin.contrib.sqla import ModelView
-
 class CategoryAdmin(_AuthMixin, ModelView):
     extra_css = ["/static/admin.css"]
     create_modal = True
     edit_modal = True
     details_modal = True
-
+    category = "Catálogo"
     form_columns = ["name", "slug", "description"]
     form_widget_args = {
         "name": {"class": "form-control form-control-sm"},
@@ -72,6 +77,7 @@ class ProductAdmin(_AuthMixin, ModelView):
     create_modal = True
     edit_modal = True
     details_modal = True
+    category = "Catálogo"
 
     form_columns = ["name", "slug", "description", "price", "image_url", "category"]
     column_list = ["name", "category", "price", "slug"]
@@ -84,7 +90,6 @@ class ProductAdmin(_AuthMixin, ModelView):
     }
     column_sortable_list = ["name", ("category", "category.name"), "price", "slug"]
     column_searchable_list = ["name", "slug", "description", "category.name"]
-
     form_widget_args = {
         "name": {"class": "form-control form-control-sm"},
         "slug": {"class": "form-control form-control-sm"},
@@ -92,15 +97,24 @@ class ProductAdmin(_AuthMixin, ModelView):
         "image_url": {"class": "form-control form-control-sm"},
         "description": {"rows": 3, "style": "resize:vertical;"},
     }
-
-    # Si tenés muchas categorías, búsqueda por AJAX (opcional)
     form_ajax_refs = {
         "category": {"fields": ("name", "slug")}
     }
 
+class SolicitudAdmin(_AuthMixin, ModelView):
+    extra_css = ["/static/admin.css"]
+    can_view_details = True
+    column_list = ["nombre", "created_at"]
+    column_labels = {"nombre": "Artículo", "created_at": "Recibida"}
+    column_default_sort = ("created_at", True)
+    form_columns = ["nombre"]
+    category = "Solicitudes"
+
 class SecureIndexView(_AuthMixin, AdminIndexView):
     extra_css = ["/static/admin.css"]
-    pass
+    # Ocultar "Home" vacío del menú
+    def is_visible(self):
+        return False
 
 admin = Admin(
     app,
@@ -110,7 +124,7 @@ admin = Admin(
 )
 admin.add_view(CategoryAdmin(Category, db.session))
 admin.add_view(ProductAdmin(Product, db.session))
-
+admin.add_view(SolicitudAdmin(SolicitudArticulo, db.session))  # NUEVA SOLAPA
 
 # ---- Utilidades (para tu footer y el menú)
 @app.context_processor
@@ -131,7 +145,6 @@ def load_data():
         with open(DATA_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
     return []
-
 
 @app.route("/")
 def home():
@@ -194,13 +207,17 @@ def initdb():
     db.create_all()
     return "DB creada OK"
 
+# ---- Guardar solicitud y avisar al usuario
 @app.route("/solicitar-articulo", methods=["POST"])
 def solicitar_articulo():
     nombre = request.form.get("nombre_articulo", "").strip()
     if nombre:
-        # Acá podrías guardar en la base de datos o enviar un correo
-        print(f"Solicitud recibida: {nombre}")
-        # Ejemplo: flash("Tu solicitud fue enviada. ¡Gracias!", "success")
+        s = SolicitudArticulo(nombre=nombre)
+        db.session.add(s)
+        db.session.commit()
+        flash("Tu solicitud fue enviada. ¡Gracias!", "success")
+    else:
+        flash("Necesitás indicar el nombre del artículo.", "error")
     return redirect(url_for("home"))
 
 if __name__ == "__main__":

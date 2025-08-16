@@ -21,28 +21,40 @@
 		<div id="carousel"
 			class="flex overflow-x-auto gap-4 scroll-smooth pb-4 scrollbar-hide snap-x snap-mandatory">
 			{% for p in productos %}
-				<div data-card class="min-w-[250px] max-w-[250px] snap-start flex-shrink-0 bg-gray-800 rounded-lg shadow hover:shadow-xl transition p-4">
-					{% set src = p.image_url %}
-					<div class="w-full bg-black rounded-lg" style="aspect-ratio: 4 / 3;">
-						<img
-							src="{{ src if src and src.startswith('http') else url_for('static', filename=(src or 'images/placeholder.png')) }}"
-							alt="{{ p.name }}"
-							class="w-full h-full object-contain rounded"
-						>
-					</div>
+				<div data-card class="min-w-[260px] max-w-[260px] snap-start flex-shrink-0
+									bg-white text-gray-900 rounded-xl border border-gray-200
+									shadow hover:shadow-lg transition p-4">
+				{% set src = p.image_url %}
+				<div class="w-full rounded-lg bg-gray-50 border border-gray-100 overflow-hidden" style="aspect-ratio: 4 / 3;">
+					<img
+					src="{{ src if src and src.startswith('http') else url_for('static', filename=(src or 'images/placeholder.png')) }}"
+					alt="{{ p.name }}"
+					class="w-full h-full object-contain"
+					>
+				</div>
 
-					<h3 class="text-lg font-bold text-yellow-400 mt-3">{{ p.name }}</h3>
-					{% if p.description %}<p class="text-sm text-gray-300 line-clamp-3">{{ p.description }}</p>{% endif %}
-					<div class="mt-2 flex items-center justify-between">
-						{% if p.category %}<span class="text-xs text-gray-400">{{ p.category.name }}</span>{% endif %}
-						{% if p.price %}<span class="text-sm font-semibold text-yellow-400">{{ p.price }}</span>{% endif %}
-					</div>
+				<h3 class="text-base font-semibold mt-3 line-clamp-2">{{ p.name }}</h3>
 
-					<a href="{{ url_for('producto', slug=p.slug) }}"
-						class="mt-3 inline-block bg-white text-gray-900 border border-gray-200 hover:bg-gray-100 px-3 py-1 rounded-full font-semibold text-sm">
-						VER
-					</a>
+				{% if p.description %}
+					<p class="text-sm text-gray-600 mt-1 line-clamp-3">{{ p.description }}</p>
+				{% endif %}
 
+				<div class="mt-2 flex items-center justify-between">
+					{% if p.category %}
+					<span class="text-xs text-gray-500">{{ p.category.name }}</span>
+					{% else %}
+					<span></span>
+					{% endif %}
+					{% if p.price %}
+					<span class="text-sm font-bold text-gray-900">${{ p.price }}</span>
+					{% endif %}
+				</div>
+
+				<a href="{{ url_for('producto', slug=p.slug) }}"
+					class="mt-3 inline-block bg-gray-900 text-white hover:bg-black
+							px-3 py-1.5 rounded-full text-sm font-medium">
+					VER PRODUCTO
+				</a>
 				</div>
 			{% else %}
 				<p class="text-gray-300">No hay productos cargados.</p>
@@ -107,6 +119,46 @@ document.addEventListener('DOMContentLoaded', () => {
   <p class="text-gray-700 mb-4">
     Contame qué artículo necesitás y el Sultán lo hará para vos.
   </p>
+
+  {% with msgs = get_flashed_messages(with_categories=True) %}
+    {% if msgs %}
+      {% set cat, msg = msgs[-1] %}
+      <div id="toast-overlay" class="fixed inset-0 z-[999] grid place-items-center bg-black/30">
+        <div id="toast"
+             class="w-[min(90vw,480px)] rounded-2xl shadow-xl border px-5 py-4 text-center
+                    bg-white text-gray-900
+                    {% if cat == 'success' %} border-green-200 {% else %} border-red-200 {% endif %}">
+          <p class="text-base font-semibold mb-1
+                    {% if cat == 'success' %} text-green-700 {% else %} text-red-700 {% endif %}">
+            {% if cat == 'success' %}Listo{% else %}Atención{% endif %}
+          </p>
+          <p class="text-sm">{{ msg }}</p>
+          <button id="toast-close"
+                  class="mt-3 inline-flex items-center rounded-full border px-3 py-1 text-sm
+                         hover:bg-gray-50">Cerrar</button>
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const overlay = document.getElementById('toast-overlay');
+          const closeBtn = document.getElementById('toast-close');
+
+          function hideToast() {
+            if (!overlay) return;
+            overlay.style.transition = 'opacity 300ms ease';
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 320);
+          }
+
+          setTimeout(hideToast, 5000);           // se oculta a los 5s
+          closeBtn?.addEventListener('click', hideToast);
+          overlay?.addEventListener('click', (e) => { if (e.target === overlay) hideToast(); });
+        });
+      </script>
+    {% endif %}
+  {% endwith %}
+
   <form action="{{ url_for('solicitar_articulo') }}" method="post" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3">
     <input
       type="text"

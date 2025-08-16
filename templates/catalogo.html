@@ -10,10 +10,11 @@
       {% set prods = cat.products|sort(attribute='name') %}
       {% if prods %}
         {% for p in prods %}
-          <li class="bg-gray-800 rounded-lg overflow-hidden shadow hover:shadow-lg transition w-[14rem]">
+          <li class="bg-white text-gray-900 rounded-xl border border-gray-200
+                    shadow hover:shadow-lg transition w-[14rem]">
             {% set src = p.image_url %}
             <a href="{{ url_for('producto', slug=p.slug) }}" class="block">
-              <div class="w-full bg-black" style="aspect-ratio: 4 / 3;">
+              <div class="w-full rounded-t-xl bg-gray-50 border-b border-gray-100 overflow-hidden" style="aspect-ratio: 4 / 3;">
                 <img
                   src="{{ src if src and src.startswith('http') else url_for('static', filename=(src or 'images/placeholder.png')) }}"
                   alt="{{ p.name }}"
@@ -25,11 +26,11 @@
               <div class="mb-1">
                 {% if cat.slug %}
                   <a href="{{ url_for('categoria', slug=cat.slug) }}"
-                     class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-gray-700 text-gray-200 hover:bg-gray-600">
+                    class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300">
                     {{ cat.name }}
                   </a>
                 {% else %}
-                  <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-gray-700 text-gray-200">{{ cat.name }}</span>
+                  <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{{ cat.name }}</span>
                 {% endif %}
               </div>
               <div class="flex items-start justify-between gap-2">
@@ -37,11 +38,11 @@
                   <a href="{{ url_for('producto', slug=p.slug) }}" class="hover:underline">{{ p.name }}</a>
                 </h3>
                 {% if p.price %}
-                  <span class="text-yellow-400 text-xs font-semibold whitespace-nowrap">{{ p.price }}</span>
+                  <span class="text-gray-900 text-xs font-bold whitespace-nowrap">${{ p.price }}</span>
                 {% endif %}
               </div>
               {% if p.description %}
-                <p class="text-gray-300 text-xs mt-1 line-clamp-2">{{ p.description }}</p>
+                <p class="text-gray-600 text-xs mt-1 line-clamp-2">{{ p.description }}</p>
               {% endif %}
             </div>
           </li>
