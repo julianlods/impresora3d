@@ -3,46 +3,70 @@
 
 {% block content %}
 <nav class="text-sm text-gray-400 mb-4">
-	<a href="{{ url_for('home') }}" class="hover:text-yellow-500">Inicio</a>
-	/ <span class="text-gray-300">Quiénes somos</span>
+  <a href="{{ url_for('home') }}" class="hover:text-yellow-500">Inicio</a>
+  / <span class="text-gray-300">Quiénes somos</span>
 </nav>
 
-<div class="grid gap-8 lg:grid-cols-2 items-center">
-	<!-- Imagen/logo -->
-	<div class="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-center">
-		<div class="w-full bg-gray-50 border border-gray-100 rounded-lg p-4 overflow-hidden" style="aspect-ratio: 4 / 3;">
-			<img
-			src="{{ url_for('static', filename='images/logo.png') }}"
-			alt="El Sultán del Plástico"
-			class="w-full h-full object-contain"
-			>
-		</div>
-	</div>
+<!--
+  Estrategia:
+  - MÓVIL (xs): se muestra un bloque MUY simple de imagen (sin marco ni recuadro).
+  - DESKTOP/TABLET (sm+): se muestra el bloque original con marco.
+  Así evitamos el "recuadro blanco" y el hueco alto en celular.
+-->
+<div class="grid gap-8 lg:grid-cols-2 items-start">
 
-	<!-- Texto -->
-	<div>
-		<h1 class="text-3xl font-bold text-amber-700">Quiénes somos</h1>
+  <!-- ====== Imagen MOBILE (solo xs) ====== -->
+  <div class="sm:hidden flex items-center justify-center">
+    <img
+      src="{{ url_for('static', filename='images/logo.png') }}"
+      alt="El Sultán del Plástico"
+      class="w-[160px] h-auto"
+    >
+  </div>
 
-		<div class="mt-6 prose prose-invert max-w-none">
-			<p>
-				En <strong>El Sultán del Plástico</strong> nos especializamos en crear soluciones personalizadas 
-				a través de la impresión 3D. Desde piezas funcionales hasta modelos decorativos, 
-				cada producto se realiza con precisión y dedicación.
-			</p>
-			<p>
-				Nuestro objetivo es transformar tus ideas en objetos reales, 
-				aprovechando la tecnología y la creatividad para ofrecer resultados únicos.
-			</p>
-			<p>
-				Ya sea para proyectos personales, prototipos industriales o diseños exclusivos, 
-				estamos acá para ayudarte a dar forma a lo que imaginás.
-			</p>
-            <div class="h-6"></div>
-            <p>
-				Y como somos conscientes que el mundo es uno solo, 
-				por cada compra que realizás, donás un 10% a la ONG del Sultán World Care.
-			</p>
-		</div>
-	</div>
+  <!-- ====== Imagen DESKTOP/TABLET (sm+) ====== -->
+  <div class="hidden sm:flex bg-white border border-gray-200 rounded-xl p-4 items-center justify-center">
+    <div class="w-full bg-gray-50 border border-gray-100 rounded-lg p-4 overflow-hidden" style="aspect-ratio: 4 / 3;">
+      <img
+        src="{{ url_for('static', filename='images/logo.png') }}"
+        alt="El Sultán del Plástico"
+        class="w-full h-full object-contain"
+      >
+    </div>
+  </div>
+
+  <!-- Texto -->
+  <div>
+    <h1 class="text-3xl font-bold text-amber-700 mb-4">Quiénes somos</h1>
+
+    <div class="prose prose-invert max-w-none text-gray-800 text-[0.95rem] sm:text-base leading-relaxed">
+      <p>
+        En <strong>El Sultán del Plástico</strong> nos especializamos en crear soluciones personalizadas
+        a través de la impresión 3D. Desde piezas funcionales hasta modelos decorativos,
+        cada producto se realiza con precisión y dedicación.
+      </p>
+      <p>
+        Nuestro objetivo es transformar tus ideas en objetos reales, aprovechando la tecnología y la creatividad
+        para ofrecer resultados únicos.
+      </p>
+      <p>
+        Ya sea para proyectos personales, prototipos industriales o diseños exclusivos,
+        estamos acá para ayudarte a dar forma a lo que imaginás.
+      </p>
+      <p class="mt-4">
+        Y como somos conscientes que el mundo es uno solo, por cada compra que realizás,
+        donás un 10% a la ONG del Sultán World Care.
+      </p>
+    </div>
+  </div>
 </div>
+
+<!-- Afinado solo móvil: menos espacio y footer estable -->
+<style>
+@media (max-width: 639px) {
+  /* Reducir gaps verticales para que el footer no “flote” */
+  .grid.gap-8 { gap: 1rem !important; }
+}
+</style>
 {% endblock %}
+

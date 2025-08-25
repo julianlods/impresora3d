@@ -5,6 +5,13 @@
 <!-- Contenedor único: centrado en la página, ancho constante -->
 <div class="mx-auto w-[min(92vw,840px)] px-4">
 
+  <!-- SOLO MÓVIL: que cada card ocupe todo el ancho (no afecta desktop) -->
+  <style>
+  @media (max-width: 639px) {
+    ul.flex > li[class*="w-[14rem]"] { width: 100% !important; }
+  }
+  </style>
+
   <!-- Breadcrumb -->
   <nav class="text-sm text-gray-400 mb-4 text-left">
     <a href="{{ url_for('catalogo') }}" class="hover:text-yellow-500">Catálogo</a>

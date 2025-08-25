@@ -14,6 +14,17 @@
 
     /* 2) Evitar vw en el contenedor: usar % + max-width */
     .layout-container { max-width: 1100px; width: 92%; margin-left: auto; margin-right: auto; }
+
+    /* --------- SOLO MÓVIL (NO TOCA DESKTOP) --------- */
+    .mobile-toggle { display: none; }
+    @media (max-width: 767px) {
+      nav.site-nav { display: none; }          /* oculta menú desktop en móvil */
+      .mobile-toggle { display: inline-flex; } /* muestra hamburguesa */
+      #mnav-panel { display: none; }
+      #mnav-panel.open { display: block; }
+      html, body { overflow-x: hidden; }       /* evita ancho horrendo en xs */
+      .layout-container { width: 94%; }        /* un poco más de aire en bordes */
+    }
   </style>
 </head>
 <body class="bg-[#f9f6f1] text-gray-900 flex flex-col min-h-screen pt-16">
@@ -30,8 +41,19 @@
         </a>
       </div>
 
-      <!-- Menú -->
-      <nav class="text-lg font-medium">
+      <!-- Botón hamburguesa (solo móvil; NO afecta desktop) -->
+      <button id="mnav-toggle"
+              class="mobile-toggle items-center justify-center rounded-lg border border-[#e6dac8] px-2.5 py-1.5 md:hidden"
+              aria-expanded="false" aria-controls="mnav-panel">
+        <svg class="w-6 h-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <span class="sr-only">Abrir menú</span>
+      </button>
+
+      <!-- Menú (desktop intacto) -->
+      <nav class="text-lg font-medium site-nav">
         <ul class="flex items-center gap-8">
           <li class="relative group">
             <a href="{{ url_for('catalogo') }}"
@@ -111,6 +133,20 @@
         </ul>
       </nav>
     </div>
+
+    <!-- Panel móvil (no afecta desktop) -->
+    <div id="mnav-panel" class="md:hidden border-t border-[#e6dac8] bg-[#f4ebdc]">
+      <div class="layout-container px-3 py-2 space-y-1">
+        <a href="{{ url_for('catalogo') }}"
+           class="block px-3 py-2 rounded-lg font-semibold text-gray-900 hover:bg-[#efe5d1]">
+          Catálogo de productos
+        </a>
+        <a href="{{ url_for('quienes_somos') }}"
+           class="block px-3 py-2 rounded-lg text-gray-900 hover:bg-[#efe5d1]">
+          Quiénes somos
+        </a>
+      </div>
+    </div>
   </header>
 
   <!-- CONTENIDO -->
@@ -127,6 +163,7 @@
 
   <script>
   document.addEventListener('DOMContentLoaded', () => {
+    /* ------- LÓGICA EXISTENTE (DESKTOP) ------- */
     const catLinks = document.querySelectorAll('.cat-link');
     const panels   = document.querySelectorAll('.prod-panel');
     const toggles  = document.querySelectorAll('.toggle-prod');
@@ -156,6 +193,24 @@
         panel.classList.toggle('hidden', expanded);
       });
     });
+
+    /* ------- SOLO MÓVIL: toggle del panel ------- */
+    const mBtn = document.getElementById('mnav-toggle');
+    const mPanel = document.getElementById('mnav-panel');
+    if (mBtn && mPanel) {
+      mBtn.addEventListener('click', () => {
+        const open = mPanel.classList.toggle('open');
+        mBtn.setAttribute('aria-expanded', String(open));
+      });
+      // al pasar a desktop, aseguramos cerrado
+      const mq = window.matchMedia('(min-width: 768px)');
+      mq.addEventListener('change', () => {
+        if (mq.matches) {
+          mPanel.classList.remove('open');
+          mBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
   });
   </script>
 
