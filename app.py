@@ -4,12 +4,18 @@ from flask_admin.contrib.sqla import ModelView
 from datetime import datetime
 from pathlib import Path
 import json
+from flask_admin.form import FileUploadField
+import os
+
 
 # ---- Flask básico
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-me"
 app.config["ADMIN_USER"] = "j"        # CAMBIALO
 app.config["ADMIN_PASSWORD"] = "j"    # CAMBIALO
+app.config["UPLOAD_FOLDER"] = os.path.join(Path(__file__).parent, "static", "uploads")
+Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
+
 
 # ---- Base de datos (SQLite)
 from flask_sqlalchemy import SQLAlchemy
@@ -37,6 +43,7 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=True)
     price = db.Column(db.String(50), nullable=True)
     image_url = db.Column(db.String(500), nullable=True)
+    image_file = db.Column(db.String(500), nullable=True)  # archivo subido
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=True)
     category = db.relationship("Category", backref=db.backref("products", lazy=True))
 
@@ -79,17 +86,18 @@ class ProductAdmin(_AuthMixin, ModelView):
     details_modal = True
     category = "Catálogo"
 
-    form_columns = ["name", "slug", "description", "price", "image_url", "category"]
+    form_columns = ["name", "slug", "description", "price", "image_url", "image_file", "category"]
     column_list = ["name", "category", "price", "slug"]
+
     column_labels = {
         "image_url": "Imagen (URL)",
+        "image_file": "Imagen (archivo)",
         "category": "Categoría",
         "name": "Producto",
         "price": "Precio",
         "slug": "Slug",
     }
-    column_sortable_list = ["name", ("category", "category.name"), "price", "slug"]
-    column_searchable_list = ["name", "slug", "description", "category.name"]
+
     form_widget_args = {
         "name": {"class": "form-control form-control-sm"},
         "slug": {"class": "form-control form-control-sm"},
@@ -97,6 +105,18 @@ class ProductAdmin(_AuthMixin, ModelView):
         "image_url": {"class": "form-control form-control-sm"},
         "description": {"rows": 3, "style": "resize:vertical;"},
     }
+
+    form_overrides = {
+        "image_file": FileUploadField
+    }
+    form_args = {
+        "image_file": {
+            "label": "Subir imagen",
+            "base_path": app.config["UPLOAD_FOLDER"],
+            "allow_overwrite": False
+        }
+    }
+
     form_ajax_refs = {
         "category": {"fields": ("name", "slug")}
     }

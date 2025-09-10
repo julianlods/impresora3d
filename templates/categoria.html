@@ -33,14 +33,21 @@
         {% for p in productos %}
           <li class="bg-white text-gray-900 rounded-xl border border-gray-200
                     overflow-hidden shadow hover:shadow-lg transition w-[14rem]">
-            {% set src = p.image_url %}
             <a href="{{ url_for('producto', slug=p.slug) }}" class="block">
               <div class="w-full rounded-t-xl bg-gray-50 border-b border-gray-100 overflow-hidden" style="aspect-ratio: 4 / 3;">
-                <img
-                  src="{{ src if src and src.startswith('http') else url_for('static', filename=(src or 'images/placeholder.png')) }}"
-                  alt="{{ p.name }}"
-                  class="w-full h-full object-contain"
-                >
+                {% if p.image_file %}
+                  <img src="{{ url_for('static', filename='uploads/' ~ p.image_file) }}"
+                      alt="{{ p.name }}"
+                      class="w-full h-full object-contain">
+                {% elif p.image_url %}
+                  <img src="{{ p.image_url }}"
+                      alt="{{ p.name }}"
+                      class="w-full h-full object-contain">
+                {% else %}
+                  <img src="{{ url_for('static', filename='images/placeholder.png') }}"
+                      alt="{{ p.name }}"
+                      class="w-full h-full object-contain">
+                {% endif %}
               </div>
             </a>
             <div class="p-3">
