@@ -1,0 +1,143 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+
+  <h2 class="mb-4">Resumen de Ventas</h2>
+
+  <!-- ===========================
+       FILTROS DE FECHA
+  ============================ -->
+  <form method="get" class="mb-4">
+
+    <div class="btn-group mb-3" role="group">
+      <a href="?periodo=hoy" class="btn btn-outline-primary btn-sm">Hoy</a>
+      <a href="?periodo=semana" class="btn btn-outline-primary btn-sm">Esta semana</a>
+      <a href="?periodo=mes" class="btn btn-outline-primary btn-sm">Este mes</a>
+      <a href="?periodo=anio" class="btn btn-outline-primary btn-sm">Este año</a>
+    </div>
+
+    <div class="row g-2 align-items-end">
+      <div class="col-auto">
+        <label class="form-label">Desde</label>
+        <input type="date"
+               name="desde"
+               class="form-control form-control-sm"
+               value="{{ desde if desde else '' }}">
+      </div>
+
+      <div class="col-auto">
+        <label class="form-label">Hasta</label>
+        <input type="date"
+               name="hasta"
+               class="form-control form-control-sm"
+               value="{{ hasta if hasta else '' }}">
+      </div>
+
+      <div class="col-auto">
+        <button class="btn btn-dark btn-sm" type="submit">Filtrar</button>
+      </div>
+    </div>
+
+  </form>
+
+  <hr>
+
+  <!-- ===========================
+       TARJETAS DE TOTALES
+  ============================ -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card border-primary">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Cantidad de ventas</h6>
+          <h3 class="card-title">{{ total_ventas }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card border-info">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Unidades vendidas</h6>
+          <h3 class="card-title">{{ total_unidades }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card border-success">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Ingresos totales</h6>
+          <h3 class="card-title">$ {{ '%.2f'|format(total_ingresos) }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card border-danger">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Costos totales</h6>
+          <h3 class="card-title">$ {{ '%.2f'|format(total_costos) }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===========================
+       GANANCIA TOTAL
+  ============================ -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card border-dark">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Ganancia total</h6>
+          <h3 class="card-title">
+            $ {{ '%.2f'|format(total_ganancia) }}
+          </h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===========================
+       DETALLE POR PRODUCTO
+  ============================ -->
+  <h4 class="mt-4 mb-3">Por producto</h4>
+
+  <div class="table-responsive">
+    <table class="table table-sm table-striped table-bordered align-middle">
+      <thead class="thead-light">
+        <tr>
+          <th>Producto</th>
+          <th class="text-end">Unidades</th>
+          <th class="text-end">Ingresos</th>
+          <th class="text-end">Costos</th>
+          <th class="text-end">Ganancia</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for nombre, datos in productos_ordenados %}
+          <tr>
+            <td>{{ nombre }}</td>
+            <td class="text-end">{{ datos.cantidad }}</td>
+            <td class="text-end">$ {{ '%.2f'|format(datos.ingresos) }}</td>
+            <td class="text-end">$ {{ '%.2f'|format(datos.costos) }}</td>
+            <td class="text-end">$ {{ '%.2f'|format(datos.ganancia) }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Todavía no hay ventas registradas.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

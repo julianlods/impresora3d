@@ -1,7 +1,7 @@
 from flask import Flask, render_template, abort, redirect, url_for, request, session, flash
-from flask_admin import Admin, AdminIndexView
+from flask_admin import Admin, AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import json
 from flask_admin.form import FileUploadField
@@ -58,6 +58,31 @@ class SolicitudArticulo(db.Model):
 
     def __repr__(self):
         return f"<SolicitudArticulo {self.nombre}>"
+
+# === NUEVO: Ventas por producto ===
+class Venta(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+    product = db.relationship("Product", backref=db.backref("ventas", lazy=True))
+
+    fecha = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    precio_venta = db.Column(db.Numeric(12, 2), nullable=False)
+    cantidad = db.Column(db.Integer, nullable=False, default=1)
+    costo_unitario = db.Column(db.Numeric(12, 2), nullable=False)
+    entregado = db.Column(db.Boolean, nullable=False, default=False)
+
+    @property
+    def total_venta(self):
+        return float(self.precio_venta or 0) * (self.cantidad or 0)
+
+    @property
+    def total_costo(self):
+        return float(self.costo_unitario or 0) * (self.cantidad or 0)
+
+    @property
+    def ganancia(self):
+        return self.total_venta - self.total_costo
 
 # ---- Admin
 class _AuthMixin:
@@ -130,6 +155,152 @@ class SolicitudAdmin(_AuthMixin, ModelView):
     form_columns = ["nombre"]
     category = "Solicitudes"
 
+class VentaAdmin(_AuthMixin, ModelView):
+    extra_css = ["/static/admin.css"]
+    create_modal = True
+    edit_modal = True
+    details_modal = True
+    category = "Ventas"
+
+    # Columnas que se muestran en la tabla
+    column_list = [
+        "product",
+        "fecha",
+        "precio_venta",
+        "cantidad",
+        "total_venta",
+        "costo_unitario",
+        "entregado",
+    ]
+
+    column_labels = {
+        "product": "Producto",
+        "fecha": "Fecha",
+        "precio_venta": "Precio Venta",
+        "cantidad": "Cantidad",
+        "total_venta": "Total",
+        "costo_unitario": "Costo Unitario",
+        "entregado": "¿Entregado?",
+    }
+
+    # Campos del formulario
+    form_columns = [
+        "product",
+        "fecha",
+        "precio_venta",
+        "cantidad",
+        "costo_unitario",
+        "entregado",
+    ]
+
+    form_widget_args = {
+        "fecha": {"class": "form-control form-control-sm"},
+        "precio_venta": {"class": "form-control form-control-sm"},
+        "cantidad": {"class": "form-control form-control-sm"},
+        "costo_unitario": {"class": "form-control form-control-sm"},
+    }
+
+    # 🔥 Importante: mostrar solo el nombre del producto en el combo
+    form_args = {
+        "product": {
+            "query_factory": lambda: Product.query.order_by(Product.name),
+            "get_label": "name",
+        }
+    }
+
+    # Formato de la columna entregado
+    column_formatters = {
+        "entregado": lambda v, c, m, p: "Sí" if m.entregado else "No"
+    }
+
+class ResumenVentasView(_AuthMixin, BaseView):
+    extra_css = ["/static/admin.css"]
+    category = "Ventas"
+
+    @expose("/", methods=["GET", "POST"])
+    def index(self):
+        # --- Filtros de fecha ---
+        desde = request.args.get("desde")
+        hasta = request.args.get("hasta")
+        periodo = request.args.get("periodo")
+
+        today = datetime.utcnow().date()
+
+        if periodo == "hoy":
+            desde = today
+            hasta = today
+
+        elif periodo == "semana":
+            desde = today - timedelta(days=today.weekday())
+            hasta = today
+
+        elif periodo == "mes":
+            desde = today.replace(day=1)
+            hasta = today
+
+        elif periodo == "anio":
+            desde = today.replace(month=1, day=1)
+            hasta = today
+
+        # Convertir strings a fechas
+        if desde:
+            desde = datetime.strptime(str(desde), "%Y-%m-%d").date()
+        if hasta:
+            hasta = datetime.strptime(str(hasta), "%Y-%m-%d").date()
+
+        # Query base
+        ventas_query = Venta.query
+
+        if desde:
+            ventas_query = ventas_query.filter(Venta.fecha >= desde)
+        if hasta:
+            ventas_query = ventas_query.filter(Venta.fecha <= hasta)
+
+        ventas = ventas_query.all()
+
+        # ---- Cálculos ----
+        total_ventas = len(ventas)
+        total_unidades = sum(v.cantidad or 0 for v in ventas)
+        total_ingresos = sum(v.total_venta for v in ventas)
+        total_costos = sum(v.total_costo for v in ventas)
+        total_ganancia = sum(v.ganancia for v in ventas)
+
+        # Resumen por producto
+        productos_stats = {}
+        for v in ventas:
+            nombre = v.product.name if v.product else "Sin producto"
+
+            if nombre not in productos_stats:
+                productos_stats[nombre] = {
+                    "cantidad": 0,
+                    "ingresos": 0.0,
+                    "costos": 0.0,
+                    "ganancia": 0.0,
+                }
+
+            productos_stats[nombre]["cantidad"] += v.cantidad or 0
+            productos_stats[nombre]["ingresos"] += v.total_venta
+            productos_stats[nombre]["costos"] += v.total_costo
+            productos_stats[nombre]["ganancia"] += v.ganancia
+
+        productos_ordenados = sorted(
+            productos_stats.items(),
+            key=lambda item: item[1]["ingresos"],
+            reverse=True,
+        )
+
+        return self.render(
+            "admin/resumen_ventas.html",
+            total_ventas=total_ventas,
+            total_unidades=total_unidades,
+            total_ingresos=total_ingresos,
+            total_costos=total_costos,
+            total_ganancia=total_ganancia,
+            productos_ordenados=productos_ordenados,
+            desde=desde,
+            hasta=hasta,
+        )
+
 class SecureIndexView(_AuthMixin, AdminIndexView):
     extra_css = ["/static/admin.css"]
     # Ocultar "Home" vacío del menú
@@ -144,7 +315,9 @@ admin = Admin(
 )
 admin.add_view(CategoryAdmin(Category, db.session))
 admin.add_view(ProductAdmin(Product, db.session))
-admin.add_view(SolicitudAdmin(SolicitudArticulo, db.session))  # NUEVA SOLAPA
+admin.add_view(SolicitudAdmin(SolicitudArticulo, db.session))
+admin.add_view(VentaAdmin(Venta, db.session))
+admin.add_view(ResumenVentasView(name="Resumen de Ventas", endpoint="resumen_ventas"))
 
 # ---- Utilidades (para tu footer y el menú)
 @app.context_processor
