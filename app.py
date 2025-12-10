@@ -65,6 +65,7 @@ class Venta(db.Model):
 
     product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
     product = db.relationship("Product", backref=db.backref("ventas", lazy=True))
+    color = db.Column(db.String(50), nullable=True)
 
     fecha = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     precio_venta = db.Column(db.Numeric(12, 2), nullable=False)
@@ -165,6 +166,7 @@ class VentaAdmin(_AuthMixin, ModelView):
     # Columnas que se muestran en la tabla
     column_list = [
         "product",
+        "color",
         "fecha",
         "precio_venta",
         "cantidad",
@@ -175,6 +177,7 @@ class VentaAdmin(_AuthMixin, ModelView):
 
     column_labels = {
         "product": "Producto",
+        "color": "Color",
         "fecha": "Fecha",
         "precio_venta": "Precio Venta",
         "cantidad": "Cantidad",
@@ -186,6 +189,7 @@ class VentaAdmin(_AuthMixin, ModelView):
     # Campos del formulario
     form_columns = [
         "product",
+        "color",
         "fecha",
         "precio_venta",
         "cantidad",
@@ -194,6 +198,7 @@ class VentaAdmin(_AuthMixin, ModelView):
     ]
 
     form_widget_args = {
+        "color": {"class": "form-control form-control-sm"},
         "fecha": {"class": "form-control form-control-sm"},
         "precio_venta": {"class": "form-control form-control-sm"},
         "cantidad": {"class": "form-control form-control-sm"},
