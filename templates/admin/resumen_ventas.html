@@ -101,6 +101,94 @@
     </div>
   </div>
 
+  <!-- ===========================
+      GRÁFICOS (Chart.js)
+  =========================== -->
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Ingresos por producto</h5>
+          <canvas id="chartIngresosProductos" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Ingresos vs Costos vs Ganancia</h5>
+          <canvas id="chartTotales" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Datos: Ingresos por producto (usa productos_ordenados que YA existe) ---
+    const labelsProductos = [
+      {% for nombre, datos in productos_ordenados %}
+        {{ nombre|tojson }}{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ];
+
+    const ingresosProductos = [
+      {% for nombre, datos in productos_ordenados %}
+        {{ (datos.ingresos or 0) }}{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ];
+
+    const ctx1 = document.getElementById('chartIngresosProductos');
+    if (ctx1) {
+      new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: labelsProductos,
+          datasets: [{
+            label: 'Ingresos',
+            data: ingresosProductos
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { ticks: { maxRotation: 0, autoSkip: true } },
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // --- Datos: Totales (usa total_ingresos / total_costos / total_ganancia) ---
+    const ctx2 = document.getElementById('chartTotales');
+    if (ctx2) {
+      new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['Ingresos', 'Costos', 'Ganancia'],
+          datasets: [{
+            data: [
+              {{ (total_ingresos or 0) }},
+              {{ (total_costos or 0) }},
+              {{ (total_ganancia or 0) }}
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+  </script>
 
   <!-- ===========================
        DETALLE POR PRODUCTO

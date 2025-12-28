@@ -6,6 +6,6 @@ Catalogo de productos impresora 3D
  # Activar el venv
  .\venv\Scripts\activate  
  # Iniciar el servidor local
- ython app.py
+ python app.py
  # Localhost:
  http://127.0.0.1:5000/

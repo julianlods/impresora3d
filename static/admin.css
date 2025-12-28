@@ -12,3 +12,16 @@
 .select2-container--bootstrap4 .select2-selection--single { height: 2rem; }
 .select2-container--bootstrap4 .select2-selection__rendered { line-height: 2rem; }
 .select2-container--bootstrap4 .select2-selection__arrow { height: 2rem; }
+
+/* Evitar salto de línea en headers del admin */
+.table thead th {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Alinear íconos de orden sin romper altura */
+.table thead th a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}

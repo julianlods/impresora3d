@@ -218,6 +218,7 @@ class VentaAdmin(_AuthMixin, ModelView):
         "entregado": lambda v, c, m, p: "Sí" if m.entregado else "No"
     }
 
+
 class ResumenVentasView(_AuthMixin, BaseView):
     extra_css = ["/static/admin.css"]
     category = "Ventas"
